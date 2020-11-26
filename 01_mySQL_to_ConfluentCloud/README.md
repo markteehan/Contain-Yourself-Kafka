@@ -2,17 +2,15 @@
 
 # MySQL to Kafka
 *Containerized Kafka Connect to stream using JDBC from MySQL to Apache Kafka. Single-file setup*
-MySQL may be configured to deny external access; so that apps must run locally alongside the database on the same VM.
-A containerized Kafka Connect can stream tables from the database to topics in Apache Kafka.
+
+MySQL may be configured to deny external access so that apps must run locally alongside the database on the same VM.
+A local containerized Kafka Connect can stream tables from the database to topics in Apache Kafka.
 Kafka Connect will auto-create the topics on dest; for the listed tables as well as the offsets/config/status topics (these will be single-partition).
-This example streams to Confluent Cloud - See "Setup"  for property substitution to stream to any Apache Kafka system 
-The Container used is Open Source.
+This example streams to Confluent Cloud - See "Setup" for property substitution to stream to any Apache Kafka system.
 
 
-## Description
-Stream database tables from MySQL to Apache Kafka.
-Co-host when external database access cannot be configured.
-Open outbount ports 9092 (for the Kafka Brokers) and 443 (Confluent Cloud schema registry)
+## Networking
+Open outbount ports 9092 (for the Kafka Brokers) and 443 (Confluent Cloud schema registry; or your equivalent)
 
 
 ## Base Container

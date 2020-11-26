@@ -10,3 +10,10 @@ This Kafka Connect container will auto-create the topics for the listed tables, 
 
 * [Coming Soon ](#Coming_Soon)
 
+
+## Requirements
+docker-compose is used for all containers
+Internet access to pull container images, confluent-hub setup and various required wgets
+Various inbound/outbound ports are needed; listed for each container
+VM recommendation for Kafka Connect is at least 16GB RAM
+Kafka Connect REST: port 8083 (reconfigurable)
