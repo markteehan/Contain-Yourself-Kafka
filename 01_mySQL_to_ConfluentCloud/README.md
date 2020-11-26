@@ -16,20 +16,23 @@ Open outbount ports 9092 (for the Kafka Brokers) and 443 (Confluent Cloud schema
 
 
 ## Base Container
-[confluentinc/cp-kafka-connect]*(https://hub.docker.com/r/confluentinc/cp-kafka-connect)
-This Docker image is licensed under the Apache 2 license.
+[confluentinc/cp-kafka-connect](https://hub.docker.com/r/confluentinc/cp-kafka-connect)
+Licensed under the Apache 2 license.
 
 
 ## Container Commands
+This docker-compose modifies the container commands:
 - call confluent-hub to install the JDBC Source plugin
 - download and unzip the mySQL jarfile required for connection
+- iterate and check while Kafka Connect starts up
 - submit a JDBCSource job to stream from the database to Confluent Cloud
+- Resume standard container commands
 
 
 ## Requirements
-- A Confluent Cloud cluster on any cloud provider; with an enabled Schema Registry
+- An Apache Kafka target system. This examples uses a [Confluent Cloud](https://www.confluent.io/confluent-cloud/tryfree) cluster (any region, any cloud provider); with an enabled Schema Registry
 - a Confluent Cloud apiKey & Secret; SR basic auth credentials
-- open outbound ports 9092 and 443
+- open outbound ports 9092 and 443 on the MySQL VM
 
 
 ## Setup
