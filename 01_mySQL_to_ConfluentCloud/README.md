@@ -1,10 +1,12 @@
 
 
-# 01_mySQL_to_ConfluentCloud
+# MySQL to Kafka
 *Containerized Kafka Connect to stream using JDBC from MySQL to Apache Kafka. Single-file setup*
 MySQL may be configured to deny external access; so that apps must run locally alongside the database on the same VM.
 A containerized Kafka Connect can stream tables from the database to topics in Apache Kafka.
 Kafka Connect will auto-create the topics on dest; for the listed tables as well as the offsets/config/status topics (these will be single-partition).
+This example streams to Confluent Cloud - See "Setup"  for property substitution to stream to any Apache Kafka system 
+The Container used is Open Source.
 
 
 ## Description
@@ -14,7 +16,8 @@ Open outbount ports 9092 (for the Kafka Brokers) and 443 (Confluent Cloud schema
 
 
 ## Base Container
-confluentinc/cp-kafka-connect
+[confluentinc/cp-kafka-connect]*(https://hub.docker.com/r/confluentinc/cp-kafka-connect)
+This Docker image is licensed under the Apache 2 license.
 
 
 ## Container Commands
