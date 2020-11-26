@@ -10,29 +10,29 @@ A containerized Kafka Connect can stream tables from the database to topics in A
 Kafka Connect will auto-create the topics on dest; for the listed tables as well as the offsets/config/status topics (these will be single-partition).
 
 
-*Description* 
+## Description
 Stream database tables from MySQL to Apache Kafka.
 Co-host when external database access cannot be configured.
 Open outbount ports 9092 (for the Kafka Brokers) and 443 (Confluent Cloud schema registry)
 
 
-*Base Container*
+## Base Container
 confluentinc/cp-kafka-connect
 
 
-*Container Commands*
+## Container Commands
 - call confluent-hub to install the JDBC Source plugin
 - download and unzip the mySQL jarfile required for connection
 - submit a JDBCSource job to stream from the database to Confluent Cloud
 
 
-*Requirements*
+## Requirements
 - A Confluent Cloud cluster on any cloud provider; with an enabled Schema Registry
 - a Confluent Cloud apiKey & Secret; SR basic auth credentials
 - open outbound ports 9092 and 443
 
 
-*Setup*
+## Setup
 If you are connecting to a no-auth Kafka system (which is not recommended; but anyway...) then remove all references to these auth properties: (xx_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM, xx_SECURITY_PROTOCOL, xx_SASL_MECHANISM, xx_SASL_JAAS_CONFIG)
 ```
 Replace...
@@ -47,7 +47,7 @@ Replace...
 ```
 
 
-*Commands*
+## Commands
 
 Start/Stop the container
 
@@ -59,6 +59,6 @@ Check the Kafka Connect logfile
 `docker logs kafka-connect`
 
 
-*Credits*
+## Credits
 
 Robin Moffat for the neat technique to pull the mysql jarfile and wait for Connect to startup. https://github.com/rmoff
