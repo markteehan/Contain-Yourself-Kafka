@@ -1,9 +1,6 @@
-# Contain-Yourself-Kafka
-docker-compose for various Apache Kafka and Confluent configs - handy for demos and POCs
 
 
-
-## 01_mySQL_to_ConfluentCloud
+# 01_mySQL_to_ConfluentCloud
 *Containerized Kafka Connect to stream using JDBC from MySQL to Apache Kafka. Single-file setup*
 MySQL may be configured to deny external access; so that apps must run locally alongside the database on the same VM.
 A containerized Kafka Connect can stream tables from the database to topics in Apache Kafka.
