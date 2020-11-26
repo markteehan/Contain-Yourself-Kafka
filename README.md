@@ -49,3 +49,5 @@ Check the Kafka Connect logfile
 Robin Moffat for the neat technique to pull the mysql jarfile. https://github.com/rmoff
 
 
+
+
