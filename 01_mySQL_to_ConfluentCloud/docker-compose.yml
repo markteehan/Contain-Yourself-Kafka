@@ -1,0 +1,102 @@
+version: '3.0'
+services:
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: kafka-connect
+    ports:
+      - 8083:8083
+    environment:
+      CONNECT_GROUP_ID: mysql-v01
+      CONNECT_CONFIG_STORAGE_TOPIC: mysql-configs-v01
+      CONNECT_OFFSET_STORAGE_TOPIC: mysql-offsets-v01
+      CONNECT_STATUS_STORAGE_TOPIC: mysql-status-v01
+      CONNECT_CUB_KAFKA_TIMEOUT: 300
+      CONNECT_BOOTSTRAP_SERVERS: REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_SASL_MECHANISM: PLAIN
+      CONNECT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"REPLACEME_APIKEY\" password=\"REPLACEME_APISECRET/g\";"
+      CONNECT_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_RETRY_BACKOFF_MS: 500
+      CONNECT_PRODUCER_BOOTSTRAP_SERVERS: REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_PRODUCER_SASL_MECHANISM: PLAIN
+      CONNECT_PRODUCER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"REPLACEME_APIKEY\" password=\"REPLACEME_APISECRET/g\";"
+      CONNECT_PRODUCER_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_PRODUCER_RETRY_BACKOFF_MS: 500
+      CONNECT_CONSUMER_BOOTSTRAP_SERVERS: REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_CONSUMER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_CONSUMER_SASL_MECHANISM: PLAIN
+      CONNECT_CONSUMER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"REPLACEME_APIKEY\" password=\"REPLACEME_APISECRET/g\";"
+      CONNECT_CONSUMER_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_CONSUMER_RETRY_BACKOFF_MS: 500
+      CONNECT_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: REPLACEME_SR_AUTH
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: REPLACEME_SR_URL
+      CONNECT_REST_ADVERTISED_HOST_NAME: REPLACEME_DB_HOSTNAME
+      CONNECT_REST_PORT: 8083
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_CONFIG_STORAGE_PARTITIONS: 1
+      CONNECT_OFFSET_STORAGE_PARTITIONS: 1
+      CONNECT_STATUS_STORAGE_PARTITIONS: 1
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components/'
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+    command:
+      - bash
+      - -c
+      - |
+        # # JDBC Drivers - download those required
+        # # ------------
+        # # MySQL
+        mkdir -p /usr/share/java/kafka-connect-jdbc/
+        cd      /usr/share/java/kafka-connect-jdbc/
+        wget --no-clobber https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.21.tar.gz
+        gzip --quiet -d mysql-connector-java-8.0.21.tar.gz 2>/dev/null
+        tar xvf mysql-connector-java-8.0.21.tar 2>/dev/null
+        rm -rf  mysql-connector-java-8.0.21/src mysql-connector-java-8.0.21.tar 2>/dev/null
+        # # or: MS SQL
+        # cd /usr/share/java/kafka-connect-jdbc/
+        # curl http://central.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.0.0.jre8/mssql-jdbc-7.0.0.jre8.jar --output mssql-jdbc-7.0.0.jre8.jar
+        #
+        confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
+        sleep 2
+        #
+        echo "Removing unwanted plugins to improve startup time ...(activemq/ibmmq/jms/elasticsearch/s3) ...
+        cd /usr/share/java/
+        rm -rf kafka-connect-activemq kafka-connect-ibmmq kafka-connect-jms kafka-connect-elasticsearch kafka-connect-s3
+        /etc/confluent/docker/run &
+        #
+        echo "Waiting for Kafka Connect to start listening on $$CONNECT_REST_ADVERTISED_HOST_NAME ⏳"
+        while [ $$(curl -s -o /dev/null -w %{http_code} http://localhost:8083/connectors) -ne 200 ] ; do
+          echo -e $$(date) " Kafka Connect listener HTTP state: " $$(curl -s -o /dev/null -w %{http_code} http://localhost:8083/connectors) " (waiting for 200)"
+          sleep 5
+        done
+        echo -e "\n--\n+> Creating Kafka Connect JDBC Source"
+        curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
+                   "name": "REPLACEME_DBNAME_REPLACEME_TABLE",
+                   "config": {
+                           "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+                            "connection.url": "jdbc:mysql://localhost:3307/REPLACEME_DBNAME",
+                           "connection.user": "DB_USERNAME",
+                       "connection.password": "DB_PASSWORD",
+                              "topic.prefix": "topic-",
+                    "table.poll.interval.ms": "20000",
+                               "table.types": "VIEW",
+                                     "mode" : "incrementing",
+                 "incrementing.column.name" : "created_timestamp",
+                       "output.data.format" : "JSON",
+                           "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                             "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+                                "tasks.max" : 1 ,
+                          "table.whitelist" : "REPLACEME_DBNAME.REPLACEME_TABLE",
+                        "validate.non.null" : false
+                           }
+                   }'
+        #
+        # Don't let the container die
+        sleep infinity
