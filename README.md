@@ -45,6 +45,7 @@ Start the container | stop the container
 Check the Kafka Connect logfile
 `docker logs kafka-connect`
 
-
+*credits*
+Robin Moffat for the neat technique to pull the mysql jarfile. https://github.com/rmoff
 
 
