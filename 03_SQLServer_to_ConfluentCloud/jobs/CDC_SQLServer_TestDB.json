@@ -2,6 +2,7 @@
          "name": "REPLACEME_JOBNAME",
          "config": {
              "connector.class" : "io.debezium.connector.sqlserver.SqlServerConnector",
+             "table.whitelist": "REPLACEME_TABLE_WHITELIST",
              "tasks.max" : "1",
              "database.server.name" : "REPLACEME_DATABASE_SERVER_NAME",
              "database.hostname" : "REPLACEME_DATABASE_HOSTNAME",
