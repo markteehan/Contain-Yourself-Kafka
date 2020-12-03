@@ -1,0 +1,11 @@
+#!/bin/sh
+
+CONNECT_SERVER="http://localhost:8083"
+
+echo;echo
+echo ":---------------------------------:"
+echo ":                                 :"
+echo ":  jobs on ${CONNECT_SERVER}  :"
+echo ":                                 :"
+echo ":---------------------------------:"
+curl -X GET  ${CONNECT_SERVER}/connectors/

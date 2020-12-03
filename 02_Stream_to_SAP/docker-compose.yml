@@ -1,0 +1,236 @@
+version: "3"
+services:
+  ksqldb:
+    image: confluentinc/cp-ksqldb-server:latest
+    hostname: ksqldb
+    container_name: ksqldb
+    ports:
+      - 8088:8088
+    environment:
+      KSQL_KSQL_SERVICE_ID: sap-stream-processing
+      KSQL_REST_ADVERTISED_HOST_NAME: ksqldb
+      KSQL_LISTENERS: http://0.0.0.0:8088
+      KSQL_KSQL_CONNECT_URL: http://kafka-connect:8083
+      #
+      KSQL_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      KSQL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      KSQL_SECURITY_PROTOCOL: SASL_SSL
+      KSQL_SASL_MECHANISM: PLAIN
+      KSQL_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      #KSQL_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: $REPLACEME_SR_URL
+      KSQL_KSQL_SCHEMA_REGISTRY_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      KSQL_KSQL_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: $REPLACEME_SR_AUTH
+      #
+      #KSQL_KSQL_SCHEMA_REGISTRY_URL: $REPLACEME_SR_URL
+      #KSQL_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      #KSQL_VALUE_CONVERTER_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: $REPLACEME_SR_AUTH
+      #
+      KSQL_REQUEST_TIMEOUT_MS: 20000
+      KSQL_RETRY_BACKOFF_MS: 500
+      #KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 3
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 3
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 3
+      KSQL_KSQL_SINK_REPLICAS: 3
+      KSQL_LOG4J_ROOT_LOGLEVEL: ERROR
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:latest
+    ports:
+      - 8082:8082
+    hostname: rest-proxy
+    container_name: rest-proxy
+    environment:
+      KAFKA_REST_HOST_NAME: rest-proxy
+      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+      #
+      KAFKA_REST_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      KAFKA_REST_PRODUCER_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      #KAFKA_REST_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      #KAFKA_REST_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
+      #KAFKA_REST_PRODUCER_SASL_MECHANISM: PLAIN
+      #KAFKA_REST_PRODUCER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      KAFKA_REST_CLIENT_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      KAFKA_REST_CLIENT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      KAFKA_REST_CLIENT_SECURITY_PROTOCOL: SASL_SSL
+      KAFKA_REST_CLIENT_SASL_MECHANISM: PLAIN
+      KAFKA_REST_CLIENT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      KAFKA_REST_SCHEMA_REGISTRY_URL: $REPLACEME_SR_URL
+      KAFKA_REST_CLIENT_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      KAFKA_REST_CLIENT_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: $REPLACEME_SR_AUTH
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: kafka-connect
+    ports:
+      - 8083:8083
+    environment:
+      CONNECT_GROUP_ID: tosap-v01
+      CONNECT_CONFIG_STORAGE_TOPIC: tosap-configs-v01
+      CONNECT_OFFSET_STORAGE_TOPIC: tosap-offsets-v01
+      CONNECT_STATUS_STORAGE_TOPIC: tosap-status-v01
+      CONNECT_CUB_KAFKA_TIMEOUT: 300
+      #
+      CONNECT_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_SASL_MECHANISM: PLAIN
+      CONNECT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      CONNECT_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_PRODUCER_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_CONSUMER_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_RETRY_BACKOFF_MS: 500
+      CONNECT_PRODUCER_RETRY_BACKOFF_MS: 500
+      CONNECT_CONSUMER_RETRY_BACKOFF_MS: 500
+      #
+      CONNECT_PRODUCER_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_PRODUCER_SASL_MECHANISM: PLAIN
+      CONNECT_PRODUCER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      CONNECT_CONSUMER_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_CONSUMER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_CONSUMER_SASL_MECHANISM: PLAIN
+      CONNECT_CONSUMER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      CONNECT_CONFLUENT_TOPIC_BOOTSTRAP_SERVERS: $REPLACEME_BOOTSTRAP_SERVERS
+      CONNECT_CONFLUENT_TOPIC_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_CONFLUENT_TOPIC_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_CONFLUENT_TOPIC_SASL_MECHANISM: PLAIN
+      CONNECT_CONFLUENT_TOPIC_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$REPLACEME_APIKEY\" password=\"$REPLACEME_APISECRET\";"
+      #
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: $REPLACEME_SR_URL
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: $REPLACEME_SR_AUTH
+      CONNECT_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      #
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_CONFIG_STORAGE_PARTITIONS: 1
+      CONNECT_OFFSET_STORAGE_PARTITIONS: 1
+      CONNECT_STATUS_STORAGE_PARTITIONS: 1
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components/'
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    command:
+      - bash
+      - -c
+      - |
+        confluent-hub install --no-prompt confluentinc/kafka-connect-http:latest
+        echo "..installed HTTP Sink"
+        sleep 2
+        #
+        echo "Removing unwanted plugins to improve startup time ...(activemq/ibmmq/jms/elasticsearch/s3) ... errors can be ignored"
+        cd /usr/share/java/
+        rm -rf kafka-connect-activemq kafka-connect-ibmmq kafka-connect-jms kafka-connect-elasticsearch kafka-connect-s3
+        /etc/confluent/docker/run &
+        echo "..sleeping to let Connect start up..."
+        sleep infinity
+
+  ksqldbcli:
+    image: confluentinc/ksqldb-cli:latest
+    container_name: ksqldbcli
+    depends_on:
+      - ksqldb
+      - rest-proxy
+      - kafka-connect
+    tty: true
+    command:
+      - sh
+      - -c
+      - |
+        echo "..."
+        echo "..."
+        echo "... Waiting 45 seconds for ksqldb to start up"
+        echo "..."
+        sleep 45
+        echo;echo;echo;echo;echo;echo
+        echo "=============== Starting ksqldbcli Commands ==================="
+        echo "Creating example topics topic-fromapp with stream ST_FROMAPP"
+        echo "and topic topic-tosap with stream ST_TOSAP_JSON"
+        echo "JSON messages in topic-fromapp will be stream-processed for JSON wrapping understandable to SAP PO"
+        echo "Use the Kafka Connect HTTP Sink connector to stream messages from topic-53-json-after to SAP PO"
+        echo "..."
+        echo "..."
+        echo "  ABAP-APP"
+        echo "     | "
+        echo "     |    Kafka Client"
+        echo "     |____[REST Proxy]"
+        echo "               |      "                      
+        echo "               |____topic-fromapp"
+        echo "                              |"
+        echo "                           [ksqlDB]"
+        echo "                              |"
+        echo "                           Stream ST_FROMAPP (topic topic-fromapp)"
+        echo "                              |"
+        echo "                           Stream ST_TOSAP_JSON (topic topic-tosap)"
+        echo "                              |"
+        echo "                         [HTTP Sink]"
+        echo "                              |"
+        echo "                              |____SAP PO"
+        echo "                                 [SAP HTTP]"
+        echo
+        echo "..."
+        echo "..."
+        echo "..."
+        echo "..."
+        echo "Calling ksqlDB to auto-create the topic-fromapp topic, and define a stream over it"
+        echo "DROP STREAM IF EXISTS ST_FROMAPP;" | ksql http://ksqldb:8088
+        echo "DROP STREAM IF EXISTS ST_TOSAP_JSON;" | ksql http://ksqldb:8088
+        echo "CREATE STREAM ST_FROMAPP (json_string varchar) WITH (kafka_topic='topic-fromapp',partitions='1',value_format='kafka');" | ksql http://ksqldb:8088
+        echo "..."
+        echo "..."
+        echo "Pretending to be an ABAP Program: Produce a message using JSON into the topic topic-fromap"
+        echo "See https://docs.confluent.io/platform/current/kafka-rest/quickstart.html#produce-and-consume-json-messages"
+        curl -X POST -H "Content-Type: application/vnd.kafka.json.v2+json" \
+             -H "Accept: application/vnd.kafka.jsonschema.v2+json" \
+             --data '{ \"APTABLE1\":{\"item\":[{\"BLDAT\":20192020,\"BUDAT\":20192020,\"BLART\":\"KI\"}' "http://rest-proxy:8082/topics/topic-fromapp"
+        echo "..."
+        echo "..."
+        #echo "INSERT INTO ST_FROMAPP (JSON_STRING) VALUES ('{ \"APTABLE1\":{\"item\":[{\"BLDAT\":20192020,\"BUDAT\":20192020,\"BLART\":\"KI\"}");" | ksql http://ksqldb:8088
+        echo "Create a second stream to transform the message into a SAP friendly format..."
+        echo "CREATE STREAM ST_TOSAP_JSON WITH (kafka_topic='topic-tosap',partitions='1',value_format='kafka') AS SELECT CONCAT(CONCAT('{ \"records\":[{ \"value\":',JSON_STRING),']}}}]}') FROM ST_FROMAPP;" | ksql http://ksqldb:8088
+        echo "..."
+        echo "..."
+        echo "Create a HTTP Sink connector to send the transformed message to SAP PO"
+        echo "Simulating SAP PO with https://eniukfgod0bt.x.pipedream.net"
+            #'confluent.topic.replication.factor': '1',
+                #'reporter.bootstrap.servers': 'localhost:9092'
+                                #'regex.patterns'= '\\\\\',   \
+                            #'regex.replacements'= '',   \
+                           #    'regex.separator'= '~'   \
+                            #, 'confluent.topic.replication.factor'= '3' \
+        echo "CREATE SINK CONNECTOR HTTPSINK_TO_SAP_PO WITH (                                                 \
+                                                  'topics'= 'topic-tosap'                                     \
+                            ,                  'tasks.max'= '1'                                               \
+                            ,            'connector.class'= 'io.confluent.connect.http.HttpSinkConnector'     \
+                            ,               'http.api.url'= 'https://eniukfgod0bt.x.pipedream.net'            \
+                            ,            'value.converter'= 'org.apache.kafka.connect.storage.StringConverter'\
+                            , 'reporter.result.topic.name'= ''                                                \
+                            ,  'reporter.error.topic.name'= ''                                                \
+                            , 'confluent.topic.bootstrap.servers'= '$REPLACEME_BOOTSTRAP_SERVERS'             \
+        , 'confluent.topic.ssl.endpoint.identification.algorithm'= 'https' \
+                             , 'confluent.topic.security.protocol'= 'SASL_SSL' \
+                                , 'confluent.topic.sasl.mechanism'= 'PLAIN' \
+                              , 'confluent.topic.sasl.jaas.config'= 'org.apache.kafka.common.security.plain.PlainLoginModule required username="$REPLACEME_APIKEY" password="$REPLACEME_APISECRET";' \
+                                            ); "| ksql http://ksqldb:8088
+        echo "SHOW CONNECTORS;" | ksql http://ksqldb:8088
+        echo " "
+        echo " "
+        echo " "
+        echo "Browse to https://requestbin.com/r/eniukfgod0bt/1jRZQG7JqXjqxE0y557TzpToCHg to see the HTTP output"
+        echo " "
+        #echo "Compare contents using ccloud consume --topic topic-tosap --from-beginning"
+        #echo " "
+        #echo "ccloud consume --topic topic-tosap --from-beginning"
+        #echo;echo;echo;echo;echo;echo
+

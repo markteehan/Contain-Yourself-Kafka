@@ -1,4 +1,4 @@
-version: '3.0'
+
 services:
   kafka-connect:
     image: confluentinc/cp-kafka-connect:latest
@@ -6,10 +6,10 @@ services:
     ports:
       - 8083:8083
     environment:
-      CONNECT_GROUP_ID: mysql-v01
-      CONNECT_CONFIG_STORAGE_TOPIC: mysql-configs-v01
-      CONNECT_OFFSET_STORAGE_TOPIC: mysql-offsets-v01
-      CONNECT_STATUS_STORAGE_TOPIC: mysql-status-v01
+      CONNECT_GROUP_ID: cdc-v01
+      CONNECT_CONFIG_STORAGE_TOPIC: cdc-configs-v01
+      CONNECT_OFFSET_STORAGE_TOPIC: cdc-offsets-v01
+      CONNECT_STATUS_STORAGE_TOPIC: cdc-status-v01
       CONNECT_CUB_KAFKA_TIMEOUT: 300
       CONNECT_BOOTSTRAP_SERVERS: REPLACEME_BOOTSTRAP_SERVERS
       CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
@@ -52,25 +52,25 @@ services:
       - bash
       - -c
       - |
-        # # JDBC Drivers - download those required
+        # # CDC Connectors do not require additional jarfiles to stream from the database to Kafka. 
         # # ------------
         # # MySQL
-        mkdir -p /usr/share/java/kafka-connect-jdbc/
-        cd      /usr/share/java/kafka-connect-jdbc/
-        wget --no-clobber https://downloads.mysql.com/archiveset/p/3/file/mysql-connector-java-8.0.21.tar.gz
-        gzip --quiet -d mysql-connector-java-8.0.21.tar.gz 2>/dev/null
-        tar xvf mysql-connector-java-8.0.21.tar 2>/dev/null
-        rm -rf  mysql-connector-java-8.0.21/src mysql-connector-java-8.0.21.tar 2>/dev/null
+        #mkdir -p /usr/share/java/kafka-connect-jdbc/
+        #cd      /usr/share/java/kafka-connect-jdbc/
+        #wget --no-clobber https://downloads.cdc.com/archiveset/p/3/file/cdc-connector-java-8.0.21.tar.gz
+        #gzip --quiet -d cdc-connector-java-8.0.21.tar.gz 2>/dev/null
+        #tar xvf cdc-connector-java-8.0.21.tar 2>/dev/null
+        #rm -rf  cdc-connector-java-8.0.21/src cdc-connector-java-8.0.21.tar 2>/dev/null
         # # or: MS SQL
         # cd /usr/share/java/kafka-connect-jdbc/
         # curl http://central.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.0.0.jre8/mssql-jdbc-7.0.0.jre8.jar --output mssql-jdbc-7.0.0.jre8.jar
         #
-        confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
+        confluent-hub install --no-prompt debezium/debezium-connector-sqlserver:latest
         sleep 2
         #
-        echo "Removing unwanted plugins to improve startup time ...(activemq/ibmmq/jms/elasticsearch/s3) ...
-        cd /usr/share/java/
-        rm -rf kafka-connect-activemq kafka-connect-ibmmq kafka-connect-jms kafka-connect-elasticsearch kafka-connect-s3
+        #echo "Removing unwanted plugins to improve startup time ...(activemq/ibmmq/jms/elasticsearch/s3) ...
+        #cd /usr/share/java/
+        #rm -rf kafka-connect-activemq kafka-connect-ibmmq kafka-connect-jms kafka-connect-elasticsearch kafka-connect-s3
         /etc/confluent/docker/run &
         #
         echo "Waiting for Kafka Connect to start listening on $$CONNECT_REST_ADVERTISED_HOST_NAME ⏳"
@@ -78,27 +78,30 @@ services:
           echo -e $$(date) " Kafka Connect listener HTTP state: " $$(curl -s -o /dev/null -w %{http_code} http://localhost:8083/connectors) " (waiting for 200)"
           sleep 5
         done
-        echo -e "\n--\n+> Creating Kafka Connect JDBC Source"
+        echo -e "\n--\n+> Creating Kafka Connect Debezium CDC Source"
         curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
-                   "name": "REPLACEME_DBNAME_REPLACEME_TABLE",
-                   "config": {
-                           "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
-                            "connection.url": "jdbc:mysql://localhost:3307/REPLACEME_DBNAME",
-                           "connection.user": "DB_USERNAME",
-                       "connection.password": "DB_PASSWORD",
-                              "topic.prefix": "topic-",
-                    "table.poll.interval.ms": "20000",
-                               "table.types": "VIEW",
-                                     "mode" : "incrementing",
-                 "incrementing.column.name" : "created_timestamp",
-                       "output.data.format" : "JSON",
-                           "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-                             "key.converter": "org.apache.kafka.connect.json.JsonConverter",
-                                "tasks.max" : 1 ,
-                          "table.whitelist" : "REPLACEME_DBNAME.REPLACEME_TABLE",
-                        "validate.non.null" : false
-                           }
-                   }'
+        {
+         "name": "REPLACEME_DBNAME_REPLACEME_TABLE",
+         "config": {
+             "connector.class" : "io.debezium.connector.sqlserver.SqlServerConnector",
+             "tasks.max" : "1",
+             "database.server.name" : "REPLACEME_DATABASE_SERVER_NAME",
+             "database.hostname" : "REPLACEME_DATABASE_HOSTNAME",
+             "database.port" : "1433",
+             "database.user" : "REPLACEME_DATABASE_USER",
+             "database.password" : "REPLACEME_DATABASE_PASSWORD",
+             "database.dbname" : "REPLACEME_DBNAME",
+             "database.history.kafka.bootstrap.servers" : "REPLACEME_BOOTSTRAP_SERVERS",
+             "database.history.kafka.topic": "histopic-REPLACEME_DBNAME_REPLACEME_TABLE",
+             "decimal.handling.mode" : "double",
+             "key.converter" : "org.apache.kafka.connect.json.JsonConverter",
+             "key.converter.schemas.enable" : "false",
+             "value.converter" : "org.apache.kafka.connect.json.JsonConverter",
+             "value.converter.schemas.enable" : "false",
+             "include.schema.changes" : "false"
+             }
+        }'
+ 
         #
         # Don't let the container die
         sleep infinity

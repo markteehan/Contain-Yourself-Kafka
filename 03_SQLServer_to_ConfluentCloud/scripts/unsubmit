@@ -1,0 +1,61 @@
+#!/bin/sh
+
+CONNECT_SERVER="http://localhost:8083"
+
+SET=N
+if [ -f ../setenv ]
+then
+  . ../setenv
+    SET=Y
+fi
+if [ -f ./setenv ]
+then
+  . ./setenv
+    SET=Y
+fi
+if [ "$SET" = "N" ]
+then
+  echo;echo
+  echo "Unable to find 'setenv' to set environment variables - check and rerun"
+  exit 255
+fi
+
+FOUND=N
+if [ "$1"x = x ]
+then
+  echo;echo
+  echo "usage: unsubmit jobs/XXX.json where jobs/XXX.json contains the JSON Job definition. Check and rerun"
+  exit 255
+fi
+
+if [ -f $1 ]
+then 
+  JOB=$1
+  FOUND=Y
+fi
+if [ -f $1.json ]
+then 
+  JOB=$1.json
+  FOUND=Y
+fi
+
+if [ "$FOUND" = "N" ]
+then
+  echo;echo
+  echo "usage: unsubmit jobs/XXX.json where jobs/XXX.json contains the JSON Job definition. Check and rerun"
+  echo "jobs/XXX.json not found"
+  exit 255
+fi
+
+JOBNAME=`echo ${JOB}|sed "s|.json||" | sed "s|jobs/||"`
+echo;echo "About to unsubmit ${JOB}"
+echo "Hit <return> to continue..."
+read hello
+
+echo;echo
+echo ":---------------------------------:"
+echo ":                                 :"
+echo ":         Unsubmitting            :"
+echo ":                                 :"
+echo ":---------------------------------:"
+curl -X DELETE ${CONNECT_SERVER}/connectors/${JOB}

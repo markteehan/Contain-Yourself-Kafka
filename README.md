@@ -3,13 +3,17 @@ docker-compose for various Apache Kafka and Confluent configs - handy for demos 
 
 
 
-* [MySQL to Kafka](01_mySQL_to_ConfluentCloud)
+* [JDBC MySQL to Kafka](01_mySQL_to_ConfluentCloud)
 A containerized Kafka Connect to stream tables from a MySQL database to topics in Apache Kafka.
 When MySQL is configured to deny external access, apps must run locally alongside the database on the same VM.
 This Kafka Connect container will auto-create the topics for the listed tables, register schemas and stream database rows as kafka messages.
 
-* [Coming Soon ](#Coming_Soon)
+* [Stream to SAP - Coming Soon ](#Coming_Soon)
+Coming soon...
 
+* [CDC SQLServer to Kafka](03_SQLServer_to_ConfluentCloud)
+Containerized Kafka Connect to stream from SQLServer (CDC) to Apache Kafka.
+This Kafka Connect container will auto-create the topics for the listed tables, register schemas and stream database rows as kafka messages.
 
 ## Requirements
 ```

@@ -1,0 +1,21 @@
+        {
+         "name": "REPLACEME_JOBNAME",
+         "config": {
+             "connector.class" : "io.debezium.connector.sqlserver.SqlServerConnector",
+             "tasks.max" : "1",
+             "database.server.name" : "REPLACEME_DATABASE_SERVER_NAME",
+             "database.hostname" : "REPLACEME_DATABASE_HOSTNAME",
+             "database.port" : "1433",
+             "database.user" : "REPLACEME_DATABASE_USER",
+             "database.password" : "REPLACEME_DATABASE_PASSWORD",
+             "database.dbname" : "REPLACEME_DBNAME",
+             "database.history.kafka.bootstrap.servers" : "REPLACEME_BOOTSTRAP_SERVERS",
+             "database.history.kafka.topic": "histopic-REPLACEME_DBNAME",
+             "decimal.handling.mode" : "double",
+             "key.converter" : "org.apache.kafka.connect.json.JsonConverter",
+             "key.converter.schemas.enable" : "false",
+             "value.converter" : "org.apache.kafka.connect.json.JsonConverter",
+             "value.converter.schemas.enable" : "false",
+             "include.schema.changes" : "false"
+             }
+        }
